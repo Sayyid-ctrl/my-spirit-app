@@ -39,6 +39,7 @@ let activeCategory = "Semua";
 
 // App Initialization
 document.addEventListener("DOMContentLoaded", async () => {
+  initDarkMode();
   initInitialTargets();
   renderCategoryPills();
   
@@ -51,12 +52,38 @@ document.addEventListener("DOMContentLoaded", async () => {
   updateProgressVisuals();
 });
 
+// Dark Mode Functions
+function initDarkMode() {
+  const isDark = Storage.getDarkMode();
+  if (isDark) {
+    document.body.classList.add("dark-mode");
+  }
+  updateDarkModeIcon(isDark);
+}
+
+function toggleDarkMode() {
+  const isDark = document.body.classList.toggle("dark-mode");
+  Storage.setDarkMode(isDark);
+  updateDarkModeIcon(isDark);
+}
+
+function updateDarkModeIcon(isDark) {
+  const btn = document.getElementById("theme-icon-btn");
+  if (!btn) return;
+  if (isDark) {
+    // Sun icon for switching to light mode
+    btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+  } else {
+    // Moon icon for switching to dark mode
+    btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+  }
+}
+
 // Load Live Data Motivasi from API
 async function loadMotivasiData() {
   const apiData = await API.fetchMotivasi();
   if (apiData && Array.isArray(apiData) && apiData.length > 0) {
     motivasiListState = apiData;
-    // Set daily quote from first item
     const daily = apiData[0];
     const quoteEl = document.getElementById("daily-quote");
     const authorEl = document.getElementById("daily-author");
@@ -146,8 +173,8 @@ function renderMotivasiList() {
           </button>
         </div>
         <h4 style="font-size: 0.95rem; margin-bottom: 6px; color: var(--text-main);">${item.judul}</h4>
-        <p style="font-size: 0.85rem; color: #475569; font-style: italic; margin-bottom: 8px;">"${item.isi_motivasi}"</p>
-        <p style="font-size: 0.75rem; font-weight: 700; color: var(--primary-dark); text-align: right;">— ${item.sumber || '-'}</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); font-style: italic; margin-bottom: 8px;">"${item.isi_motivasi}"</p>
+        <p style="font-size: 0.75rem; font-weight: 700; color: var(--primary); text-align: right;">— ${item.sumber || '-'}</p>
       </div>
     `;
   }).join("");
@@ -284,7 +311,6 @@ async function handleSaveTarget(event) {
   closeTargetModal();
   renderTargets();
 
-  // Async sync to API
   if (targetObj) {
     await API.saveTarget(targetObj);
     await loadTargetData();
@@ -298,7 +324,6 @@ async function deleteTarget(idTarget) {
   Storage.saveTargets(targets);
   renderTargets();
 
-  // Async sync delete to API
   await API.deleteTarget(idTarget);
 }
 
@@ -332,7 +357,6 @@ async function handleAddMotivasi(e) {
   motivasiListState.unshift(newMotivasi);
   renderMotivasiList();
 
-  // Async save to Google Spreadsheet via API
   const res = await API.saveMotivasi(newMotivasi);
   if (res && res.success) {
     alert("Motivasi berhasil tersimpan ke Google Spreadsheet!");

@@ -4,21 +4,50 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SEMANGAT BELAJAR - My Spirit App</title>
+  
+  <!-- PWA & Theme Meta Tags -->
+  <meta name="theme-color" content="#0d9488">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <!-- Header Application -->
   <header class="app-header">
-    <h1>
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-      SEMANGAT BELAJAR
-    </h1>
-    <p>Aplikasi motivasi & target belajar santri</p>
+    <div class="header-title">
+      <h1>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        SEMANGAT BELAJAR
+      </h1>
+      <p>Aplikasi motivasi & target belajar santri</p>
+    </div>
+    
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <!-- PWA Install Button (Appears if browser supports PWA prompt) -->
+      <button id="pwa-install-btn" class="dark-mode-toggle" style="display: none;" onclick="triggerPwaInstall()" title="Download / Install Aplikasi di HP">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      </button>
+
+      <!-- Dark Mode Toggle Button -->
+      <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Ubah Mode Tampilan" id="theme-icon-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+    </div>
   </header>
 
   <!-- View 1: Beranda -->
   <section id="view-home" class="view active">
+    <!-- PWA Install Banner Card -->
+    <div id="pwa-install-banner" class="card card-gold" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div>
+        <h4 style="font-size: 0.9rem; margin-bottom: 2px;">📲 Install Aplikasi</h4>
+        <p style="font-size: 0.78rem; color: var(--text-muted);">Pasang di layar utama HP Anda agar lebih cepat diakses!</p>
+      </div>
+      <button class="btn btn-sm" onclick="triggerPwaInstall()" style="width: auto; padding: 8px 14px;">Install</button>
+    </div>
+
     <div class="card card-gold quote-box">
       <div class="quote-text" id="daily-quote">"Barangsiapa yang menempuh jalan untuk menuntut ilmu, Allah akan mudahkan baginya jalan menuju surga."</div>
       <div class="quote-author" id="daily-author">HR. Muslim</div>
@@ -185,5 +214,44 @@
   <script src="api.js"></script>
   <script src="storage.js"></script>
   <script src="app.js"></script>
+
+  <!-- PWA Installation & Service Worker Script -->
+  <script>
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('pwa-install-btn');
+      const installBanner = document.getElementById('pwa-install-banner');
+      if (installBtn) installBtn.style.display = 'flex';
+      if (installBanner) installBanner.style.display = 'flex';
+    });
+
+    function triggerPwaInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('Pengguna menginstal PWA');
+          }
+          deferredPrompt = null;
+          const installBtn = document.getElementById('pwa-install-btn');
+          const installBanner = document.getElementById('pwa-install-banner');
+          if (installBtn) installBtn.style.display = 'none';
+          if (installBanner) installBanner.style.display = 'none';
+        });
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+          console.log('Service Worker PWA berhasil didaftarkan.');
+        }).catch(err => {
+          console.log('Pendaftaran Service Worker gagal:', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>

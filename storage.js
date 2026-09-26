@@ -2,7 +2,8 @@
 const STORAGE_KEYS = {
   TARGETS: "myspirit_targets",
   FAVORITES: "myspirit_favorites",
-  USER: "myspirit_user"
+  USER: "myspirit_user",
+  DARK_MODE: "myspirit_darkmode"
 };
 
 const Storage = {
@@ -34,5 +35,13 @@ const Storage = {
     }
     this.saveFavorites(favorites);
     return favorites;
+  },
+
+  getDarkMode() {
+    return localStorage.getItem(STORAGE_KEYS.DARK_MODE) === "true";
+  },
+
+  setDarkMode(isDark) {
+    localStorage.setItem(STORAGE_KEYS.DARK_MODE, isDark ? "true" : "false");
   }
 };
